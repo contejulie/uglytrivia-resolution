@@ -1,16 +1,20 @@
 package com.adaptionsoft.games.uglytrivia;
 
+import java.lang.reflect.Type;
 import java.util.*;
 
 public class Game {
+
+    private static final int NB_CELLS = 12;
     private PlayerList playerList;
-    private Map<String, Category> categoryList = new HashMap<>();
+    private Map<TypeCategory, Category> categoryList = new HashMap<>();
+    private Map<TypeCategory, String> positionCategory = new HashMap<>();
     private boolean isGettingOutOfPenaltyBox;
 
     public Game(PlayerList playerList) {
         this.playerList = playerList;
         for (TypeCategory typeCategory : TypeCategory.values()) {
-            categoryList.put(typeCategory.toString(), new Category(typeCategory.toString()));
+            categoryList.put(typeCategory, new Category(typeCategory));
         }
     }
 
@@ -28,7 +32,7 @@ public class Game {
         System.out.println("They have rolled a " + roll);
 
         if (playerList.getCurrentPlayer().isInPenaltyBox()) {
-            if (roll % 2 == 0) {
+            if (getOutOfPenaltyBox(roll)) {
                 System.out.println(playerList.getCurrentPlayer().getName() + " is not getting out of the penalty box");
                 isGettingOutOfPenaltyBox = false;
                 return;
@@ -41,9 +45,13 @@ public class Game {
         askQuestion();
     }
 
+    private boolean getOutOfPenaltyBox(int roll) {
+        return roll % 2 == 0;
+    }
+
     private void playTurn(int roll) {
         Player currentPlayer = playerList.getCurrentPlayer();
-        currentPlayer.setNewLocation(roll);
+        currentPlayer.setNewLocation(roll, NB_CELLS);
 
         System.out.println(currentPlayer.getName()
                 + "'s new location is "
@@ -56,18 +64,18 @@ public class Game {
     }
 
 
-    private String currentCategory() {
+    private TypeCategory currentCategory() {
         Player currentPlayer = playerList.getCurrentPlayer();
-        if (currentPlayer.getLocation() == 0) return TypeCategory.POP.toString();
-        if (currentPlayer.getLocation() == 4) return TypeCategory.POP.toString();
-        if (currentPlayer.getLocation() == 8) return TypeCategory.POP.toString();
-        if (currentPlayer.getLocation() == 1) return TypeCategory.SCIENCE.toString();
-        if (currentPlayer.getLocation() == 5) return TypeCategory.SCIENCE.toString();
-        if (currentPlayer.getLocation() == 9) return TypeCategory.SCIENCE.toString();
-        if (currentPlayer.getLocation() == 2) return TypeCategory.SPORTS.toString();
-        if (currentPlayer.getLocation() == 6) return TypeCategory.SPORTS.toString();
-        if (currentPlayer.getLocation() == 10) return TypeCategory.SPORTS.toString();
-        return TypeCategory.ROCK.toString();
+        if (currentPlayer.getLocation() == 0) return TypeCategory.POP;
+        if (currentPlayer.getLocation() == 4) return TypeCategory.POP;
+        if (currentPlayer.getLocation() == 8) return TypeCategory.POP;
+        if (currentPlayer.getLocation() == 1) return TypeCategory.SCIENCE;
+        if (currentPlayer.getLocation() == 5) return TypeCategory.SCIENCE;
+        if (currentPlayer.getLocation() == 9) return TypeCategory.SCIENCE;
+        if (currentPlayer.getLocation() == 2) return TypeCategory.SPORTS;
+        if (currentPlayer.getLocation() == 6) return TypeCategory.SPORTS;
+        if (currentPlayer.getLocation() == 10) return TypeCategory.SPORTS;
+        return TypeCategory.ROCK;
     }
 
     public boolean wasCorrectlyAnswered() {

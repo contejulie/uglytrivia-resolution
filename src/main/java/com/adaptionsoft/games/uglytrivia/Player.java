@@ -29,9 +29,9 @@ public class Player {
         return location;
     }
 
-    public void setNewLocation(int location) {
-        this.location = this.location + location;
-        if (this.location > 11) this.location = this.location - 12;
+    public void setNewLocation(int move, int nbCells) {
+        location = location + move;
+        if (location >= nbCells) location = location - nbCells;
     }
 
     public boolean isInPenaltyBox() {
