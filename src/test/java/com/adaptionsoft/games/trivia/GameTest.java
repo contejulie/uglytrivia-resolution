@@ -1,12 +1,15 @@
 package com.adaptionsoft.games.trivia;
 
+import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.adaptionsoft.games.uglytrivia.Game;
+import com.adaptionsoft.games.uglytrivia.PlayerList;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
+import java.util.List;
 import java.util.Random;
 
 import org.junit.contrib.java.lang.system.SystemOutRule;
@@ -20,16 +23,19 @@ public class GameTest {
 
     private String gameMasterPrinter;
     private String gamePrinter;
+    private List<String> playerListName = asList("test0", "test1", "test2");
 
     @Before
     public void setup() {
-        init();
         systemOutRule.enableLog();
         systemOutRule.clearLog();
+        aGameMaster = new GameMaster();
     }
 
     private void init() {
-        aGame = new Game();
+        PlayerList playerList = new PlayerList(playerListName);
+
+        aGame = new Game(playerList);
         aGameMaster = new GameMaster();
         gameMasterPrinter = "";
         gamePrinter = "";
@@ -39,7 +45,8 @@ public class GameTest {
     public void shouldCompareGameAndGameMaster() {
 
         for (int i = 0; i < 40; i++) {
-            createPlayer(3);
+            init();
+            initGameMasterPlayer();
             systemOutRule.clearLog();
 
             gameMasterRunner(i);
@@ -49,47 +56,44 @@ public class GameTest {
             gamePrinter = getPrinter(gamePrinter);
 
             assertThat(gameMasterPrinter).isEqualTo(gamePrinter);
-            init();
+
         }
     }
 
-    @Test
-    public void shouldAddPlayerToTheGame() {
-        boolean isAddedPlayerToGame = aGame.add("test");
-        gamePrinter = getPrinter(gamePrinter);
-        boolean isAddedPlayerToGameMaster = aGameMaster.add("test");
-        gameMasterPrinter = getPrinter(gameMasterPrinter);
-        assertThat(isAddedPlayerToGame).isEqualTo(isAddedPlayerToGameMaster);
-        assertThat(gameMasterPrinter).isEqualTo(gamePrinter);
+    private void initGameMasterPlayer() {
+        for(String name : playerListName) {
+            aGameMaster.add(name);
+        }
     }
 
-    @Test
-    public void shouldReturnRockQuestion() {
-        assertThat(aGame.createRockQuestion(1)).isEqualTo(aGameMaster.createRockQuestion(1));
-    }
 
-    @Test
-    public void shouldGetPlayerCount() {
-        createPlayer(1);
-        assertThat(aGameMaster.howManyPlayers()).isEqualTo(aGame.howManyPlayers()).isEqualTo(1);
-    }
 
     @Test
     public void shouldCheckIfTheGameIsPlayable() {
         createPlayer(2);
+        aGame = new Game(createPlayerList(2));
         assertThat(aGameMaster.isPlayable()).isEqualTo(aGame.isPlayable()).isEqualTo(true);
     }
 
     @Test
     public void shouldCheckIfTheGameIsNotPlayable() {
         createPlayer(1);
+        aGame = new Game(createPlayerList(1));
         assertThat(aGameMaster.isPlayable()).isEqualTo(aGame.isPlayable()).isEqualTo(false);
     }
 
     private void createPlayer(int nbPlayer) {
         for (int i = 0; i < nbPlayer; i++) {
-            assertThat(aGameMaster.add("test" + i)).isEqualTo(aGame.add("test" + i));
+            aGameMaster.add("test" + i);
         }
+    }
+
+    private PlayerList createPlayerList(int nbPlayer) {
+        PlayerList playerList = new PlayerList();
+        for (int i = 0; i < nbPlayer; i++) {
+            playerList.add("test" + i);
+        }
+        return playerList;
     }
 
     private void gameRunner(int seed) {
@@ -113,7 +117,6 @@ public class GameTest {
         Random rand = new Random(seed);
 
         do {
-
             aGameMaster.roll(rand.nextInt(5) + 1);
 
             if (rand.nextInt(9) == 7) {
